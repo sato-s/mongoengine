@@ -1034,6 +1034,22 @@ class InstanceTest(unittest.TestCase):
         p1.reload()
         self.assertEqual(p1.name, p.parent.name)
 
+    def test_save_cascades_save_new_document(self):
+        class Person(Document):
+            name = StringField()
+            parent = GenericReferenceField()
+
+        p1 = Person(name="Wilson Snr")
+        p1.save()
+
+        p2 = Person(name="Wilson Jr")
+        p2.parent = p1
+
+        p2.save(cascade=True)
+
+        p = Person.objects(name="Wilson Jr").get()
+        self.assertEqual(p.parent.name, "Wilson Snr")
+
     def test_save_atomicity_condition(self):
         class Widget(Document):
             toggle = BooleanField(default=False)
